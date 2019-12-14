@@ -2,7 +2,7 @@
 
 This sample demonstrates how to get and use a resource token to access certain items in a container inside a database. 
   
-You can use a resource token (by creating Cosmos DB users and permissions) when you want to provide access to resources in your Cosmos DB account to a client that cannot be trusted with the master key.
+You can use a resource token when you want to provide access to resources in your Cosmos DB account to a client that cannot be trusted with the master key.
 
 If you'd like more information, please see ["Secure access to data in Azure Cosmos DB"](https://docs.microsoft.com/en-us/azure/cosmos-db/secure-access-to-data).
 
