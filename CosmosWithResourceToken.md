@@ -69,29 +69,26 @@ token[container.id] = permission.properties["_token"]
 
 ```
 
-At this point, we've created *Test User* who has access to items with partition key "1" inside *my_container*, which is a container inside *my_database*. This user was given the *ALL* permission, which allows READ, UPDATE, and DELETE operations. The other options are: 
+At this point, we've created *Test User* who has access to items with Partition Key "1" inside *my_container*, which is a container inside *my_database*. This user was given the **ALL** permission, allowing READ, UPDATE, and DELETE operations. The other options are: 
 
   * PermissionMode.Read: READ operations only 
   * PermissionMode.NoneMode: None
 
-The resource token comes with the created permission can be used to a create a CosmosClient who has access to data specified by the permission definition. 
+The resource token that comes with the created permission can be used to a create a CosmosClient who has access to data specified by the permission definition. 
 
 
 ### Use Resource Token to Access Data 
 
-Now pretend that you're given this token, which gives you access to only specific data from *my_container* in *my_database*:
+Now pretend that you're given this token, which gives you access to only specific data from *my_container* in *my_database* and "Item1" in the container has PartitionKey "1":
 
 ```
 token_client = CosmosClient(url, token)
 database = token_client.get_database_client("my_database")
 container = database.get_container_client("my_container")
 
-
-# Pretend that "item1" the container has PartitionKey "1" 
-
 # Read 
 try: 
-    item_1 = container.read_item(item="item1", partition_key="1")
+    item_1 = container.read_item(item="Item1", partition_key="1")
     print(item_1)
 except exceptions.CosmosHttpResponseError: 
     print("Error in reading item")
@@ -101,9 +98,9 @@ except exceptions.CosmosHttpResponseError:
 try: 
     container.upsert_item(
         {
-            "id":"item1",
+            "id":"Item1",
             "key":"1",
-            "info":"updating info"
+            "info":"Item1 info updated"
         }
     )
 except exceptions.CosmosHttpResponseError: 
@@ -112,14 +109,27 @@ except exceptions.CosmosHttpResponseError:
 
 # Delete 
 try:
-    container.delete_item(item="item1", partition_key="1")
+    container.delete_item(item="Item1", partition_key="1")
 except exceptions.CosmosHttpResponseError: 
     print("Error in deleting item")
 
 
 # Create 
 try:
-    container.create_item(item="new_item1", partition_key="1")
+    container.create_item(
+        {
+            "id":"Item2",
+            "key":"1",
+            "info":"Item2 info"
+        }
+    )
+    container.create_item(
+        {
+            "id":"Item3",
+            "key":"1",
+            "info":"Item3 info"
+        }
+    )
 except exceptions.CosmosHttpResponseError: 
     print("Error in creating item")
 
