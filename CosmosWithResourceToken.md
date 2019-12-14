@@ -43,7 +43,7 @@ except exceptions.CosmosResourceExistsError:
 user_name = "Test User"
 try: 
     user = database.create_user(body={"id": user_name})
-except exceptions.CosmosHttpResponseError:
+except exceptions.CosmosResourceExistsError:
     user = database.get_user_client(user_name)
 
 # 4. Give this user permission to access items with PartitionKey = "1" in container 
@@ -59,7 +59,7 @@ permission_definition = {
 
 try: 
     permission = user.create_permission(permission_definition)
-except exceptions.CosmosHttpResponseError: 
+except exceptions.CosmosResourceExistsError:
     permission = user.get_permission(permission_name)
 
 # 5. Get the resource token that's associated with the permission created
@@ -90,11 +90,13 @@ container = database.get_container_client("my_container")
 try: 
     item_1 = container.read_item(item="Item1", partition_key="1")
     print(item_1)
-except exceptions.CosmosHttpResponseError: 
+except exceptions.CosmosResourceNotFoundError:
+    print("Cannot read--item not found")
+except exceptions.CosmosHttpResponseError:
     print("Error in reading item")
 
 
-# Update
+# Update or insert if not exists
 try: 
     container.upsert_item(
         {
@@ -110,6 +112,8 @@ except exceptions.CosmosHttpResponseError:
 # Delete 
 try:
     container.delete_item(item="Item1", partition_key="1")
+except exceptions.CosmosResourceNotFoundError:
+    print("Cannot delete--item not found")
 except exceptions.CosmosHttpResponseError: 
     print("Error in deleting item")
 
@@ -130,6 +134,8 @@ try:
             "info":"Item3 info"
         }
     )
+except exceptions.CosmosResourceExistsError:
+    print("Cannot create--item already exists")
 except exceptions.CosmosHttpResponseError: 
     print("Error in creating item")
 
