@@ -19,6 +19,12 @@ import json
 # ----------------------------------------------------------------------------------------------------------
 # Sample - how to get and use resource token that allows restricted access to data  
 # ----------------------------------------------------------------------------------------------------------
+# Note: 
+#
+# This sample creates a Container to your database account. 
+# Each time a Container is created the account will be billed for 1 hour of usage based on
+# the provisioned throughput (RU/s) of that account.
+# ----------------------------------------------------------------------------------------------------------
 
 HOST = config.settings["host"]
 MASTER_KEY = config.settings["master_key"]
@@ -73,7 +79,7 @@ def token_client_read_all(container):
         for i in items:
             print(i)
     except exceptions.CosmosResourceNotFoundError:
-        print("Cannot read--container '{0}' not found.".format(container.id))
+        print("Cannot read items--container '{0}' not found.".format(container.id))
     except exceptions.CosmosHttpResponseError:
         print("Error in reading items in container '{0}'.".format(container.id))
 
@@ -126,7 +132,7 @@ def run_sample():
 
         user = create_user_if_not_exists(db, USERNAME)
 
-        # permission to perform operations on all documents inside a container
+        # permission to perform operations on all items inside a container
         permission_definition = {
             "id": CONTAINER_ALL_PERMISSION,
             "permissionMode": documents.PermissionMode.All,
@@ -152,7 +158,7 @@ def run_sample():
         # Read all items in the container, across all partitions
         token_client_read_all(token_container)
 
-        # Read specific document
+        # Read specific item
         token_client_read_item(token_container, USERNAME, ITEM_2_ID)
 
         # Query for items in a certain partition
@@ -161,7 +167,7 @@ def run_sample():
         # Delete an item
         token_client_delete(token_container, USERNAME, ITEM_2_ID)
 
-        print("read only")
+    
         # Give user read-only permission, for a specific partition 
         user_2 = create_user_if_not_exists(db, USERNAME_2)
         permission_definition = {
@@ -180,10 +186,10 @@ def run_sample():
         token_db = token_client.get_database_client(DATABASE_ID)
         token_container = token_db.get_container_client(CONTAINER_ID)
 
-        # Fails since this client has access to only items with partition key "user2"
+        # Fails since this client has access to only items with partition key USERNAME_2 (ie. "user2")
         token_client_read_all(token_container)
 
-        # Ok to read items with partition key "user2"
+        # Ok to read item(s) with partition key "user2"
         token_client_read_item(token_container, USERNAME_2, ITEM_3_ID)
 
         # Can't upsert or delete since it's read-only
@@ -191,14 +197,13 @@ def run_sample():
 
 
         # Give user CRUD permissions, only for a specific item
-        print("doc")
         user_2.delete_permission(PARTITION_READ_PERMISSION)
         assert len(list(user_2.list_permissions())) == 0
 
         permission_definition = {
             "id": DOCUMENT_ALL_PERMISSION,
             "permissionMode": documents.PermissionMode.All,
-            "resource": "dbs/7OEeAA==/colls/7OEeAPR+Rms=/docs/7OEeAPR+RmsEAAAAAAAAAA==/"
+            "resource": "dbs/7OEeAA==/colls/7OEeAPR+Rms=/docs/7OEeAPR+RmsEAAAAAAAAAA==/" #this identifies the item with id "3"
         }
 
         permission = create_permission_if_not_exists(user_2, permission_definition)
