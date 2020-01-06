@@ -2,7 +2,6 @@ import azure.cosmos.cosmos_client as cosmos_client
 import azure.cosmos.exceptions as exceptions
 from azure.cosmos.partition_key import PartitionKey
 import azure.cosmos.documents as documents
-import azure.cosmos.permission as cosmos_permission
 
 
 import config
@@ -132,7 +131,7 @@ def run_sample():
 
         user = create_user_if_not_exists(db, USERNAME)
 
-        # permission to perform operations on all items inside a container
+        # Permission to perform operations on all items inside a container
         permission_definition = {
             "id": CONTAINER_ALL_PERMISSION,
             "permissionMode": documents.PermissionMode.All,
